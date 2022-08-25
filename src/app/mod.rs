@@ -57,8 +57,7 @@ pub async fn run(logs: Receiver<logger::Log>) {
 
         for x in 0..Chip8::VIDEO_WIDTH as usize {
             for y in 0..Chip8::VIDEO_HEIGHT as usize {
-                if buffer[x + y * Chip8::VIDEO_HEIGHT as usize] == 0xFF {
-                    trace!("Drawing square [{}, {}]", x, y);
+                if buffer[x + y * Chip8::VIDEO_WIDTH as usize] == 0xFF {
                     draw_rectangle(
                         x as f32 * pixel_size,
                         y as f32 * pixel_size,
