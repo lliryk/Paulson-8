@@ -12,7 +12,7 @@
 
 pub mod opcodes;
 
-use log::{error, warn};
+use log::{error, info, trace, warn};
 use opcodes::OP;
 use rand;
 
@@ -92,6 +92,7 @@ impl Chip8 {
         //     }
         // };
 
+        // let file = include_bytes!("../../res/chip8-test-suite.ch8");
         let file = include_bytes!("../../res/IBM Logo.ch8");
 
         // Would be nice to have start address be usize...
@@ -222,10 +223,13 @@ impl Chip8 {
                             break;
                         }
                         let sprite_pixel = sprite_byte & (0x80 >> col);
-                        let screen_pixel = &mut self.video.0
-                            [(y_pos + row) * Chip8::VIDEO_WIDTH as usize + (x_pos + col)];
-
                         if sprite_pixel != 0 {
+                            let x = (x_pos + col) % Chip8::VIDEO_WIDTH as usize;
+                            let y = (y_pos + row) % Chip8::VIDEO_HEIGHT as usize;
+
+                            let idx = x + Chip8::VIDEO_WIDTH as usize * y;
+                            let screen_pixel = &mut self.video.0[idx];
+
                             if *screen_pixel == 0xFF {
                                 //  Collision
                                 self.registers[0x0F] = 1;
@@ -247,6 +251,7 @@ impl Chip8 {
         let second_byte = self.memory.0[self.program_counter as usize + 1];
         let op = OP::from(first_byte << 8 | second_byte as u16);
 
+        trace!("PC: {}, OP: {}", self.program_counter, op);
         self.program_counter += 2;
 
         self.execute(op);
