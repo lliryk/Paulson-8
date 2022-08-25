@@ -5,7 +5,7 @@ use std::{
 };
 
 use egui::{text::LayoutJob, Color32, ComboBox, Galley, ScrollArea, TextFormat, Ui};
-use log::{debug, error, info, trace, warn, Level};
+use log::Level;
 
 use super::logger;
 

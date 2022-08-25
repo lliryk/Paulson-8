@@ -1,6 +1,6 @@
 // These OPs will be capitalized, RFC be aware!
 #[allow(clippy::upper_case_acronyms)]
-#[derive(PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub enum OP {
     CLS,
     RET,

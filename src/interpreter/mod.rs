@@ -273,10 +273,6 @@ impl Memory {
     pub fn new() -> Self {
         Memory([0; 4096])
     }
-
-    pub fn read(address: u16) -> u8 {
-        todo!()
-    }
 }
 
 // Do I actually want to implement these like this
