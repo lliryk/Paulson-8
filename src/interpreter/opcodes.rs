@@ -32,7 +32,7 @@ pub enum OP {
 impl From<u16> for OP {
     fn from(v: u16) -> Self {
         match v {
-            0x00E8 => OP::CLS,
+            0x00E0 => OP::CLS,
             0x00EE => OP::RET,
             0x1000..=0x1FFF => OP::JP { addr: v & 0x0FFF },
             0x2000..=0x2FFF => OP::CALL { addr: v & 0x0FFF },
@@ -127,6 +127,11 @@ impl std::fmt::Display for OP {
 #[cfg(test)]
 mod test {
     use super::OP;
+
+    #[test]
+    fn parse_clear() {
+        assert_eq!(OP::from(0x00E0), OP::CLS);
+    }
 
     #[test]
     fn parse_jump() {
