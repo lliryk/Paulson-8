@@ -240,6 +240,25 @@ impl Chip8 {
                     }
                 }
             }
+            OP::SKP { vx } => {
+                if self.keypad.0[vx as usize] == 0xFF {
+                    self.program_counter += 2;
+                }
+            }
+            OP::SKNP { vx } => {
+                if self.keypad.0[vx as usize] != 0xFF {
+                    self.program_counter += 2;
+                }
+            }
+            OP::LDDT { vx } => self.registers[vx as usize] = self.delay_timer,
+            OP::LDK { vx } => {
+                if let Some(index) = self.keypad.0.iter().position(|x| *x == 0xFF) {
+                    self.registers[vx as usize] = index as u8;
+                } else {
+                    // No key was pressed
+                    self.program_counter -= 2;
+                }
+            }
             OP::INV { opcode } => {
                 warn!("Attempted to execute invalid opcode: 0x{:04x}", opcode);
             }

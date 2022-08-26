@@ -26,6 +26,10 @@ pub enum OP {
     JPR { addr: u16 },
     RND { vx: u8, byte: u8 },
     DRW { vx: u8, vy: u8, height: u8 },
+    SKP { vx: u8 },
+    SKNP { vx: u8 },
+    LDDT { vx: u8 },
+    LDK { vx: u8 },
     INV { opcode: u16 }, // Invalid opcode
 }
 
@@ -70,7 +74,7 @@ impl From<u16> for OP {
                     0x06 => OP::SHR { vx }, // Potentially move vy here also? Used in orignal implemenation
                     0x07 => OP::SUBN { vx, vy },
                     0x0E => OP::SHL { vx },
-                    _ => todo!(),
+                    _ => OP::INV { opcode: v },
                 }
             }
             0x9000..=0x9FFF if v & 0x000F == 0 => OP::SNER {
@@ -88,6 +92,20 @@ impl From<u16> for OP {
                 vy: ((v & 0x00F0) >> 4) as u8,
                 height: (v & 0x0F) as u8,
             },
+            0xE000..=0xEFFF if v & 0x00FF == 0xE9 => OP::SKP {
+                vx: ((v & 0x0F00) >> 8) as u8,
+            },
+            0xE000..=0xEFFF if v & 0x00FF == 0xA1 => OP::SKNP {
+                vx: ((v & 0x0F00) >> 8) as u8,
+            },
+            0xF000..=0xFFFF => {
+                let vx = ((v & 0x0F00) >> 8) as u8;
+                match v & 0x00FF {
+                    0x07 => OP::LDDT { vx },
+                    0x0A => OP::LDK { vx },
+                    _ => OP::INV { opcode: v },
+                }
+            }
             _ => OP::INV { opcode: v },
         }
     }
@@ -119,6 +137,10 @@ impl std::fmt::Display for OP {
             OP::JPR { .. } => "JPR", // Should this be "JP"?
             OP::RND { .. } => "RND",
             OP::DRW { .. } => "DRW",
+            OP::SKP { .. } => "SKP",
+            OP::SKNP { .. } => "SKNP",
+            OP::LDDT { .. } => "LDDT", // Should this be "LD"?
+            OP::LDK { .. } => "LDK",
             OP::INV { .. } => "INV",
         })
     }
@@ -396,5 +418,31 @@ mod test {
                 height: 0x0E
             }
         );
+    }
+
+    #[test]
+    fn parse_skip() {
+        assert_eq!(OP::from(0xE0E9), OP::SKP { vx: 0x00 });
+        assert_eq!(OP::from(0xEFE9), OP::SKP { vx: 0x0F });
+        assert_eq!(OP::from(0xE000), OP::INV { opcode: 0xE000 });
+    }
+
+    #[test]
+    fn parse_skip_not_equal() {
+        assert_eq!(OP::from(0xE0A1), OP::SKNP { vx: 0x00 });
+        assert_eq!(OP::from(0xEFA1), OP::SKNP { vx: 0x0F });
+        assert_eq!(OP::from(0xE000), OP::INV { opcode: 0xE000 });
+    }
+
+    #[test]
+    fn parse_load_delay_timer() {
+        assert_eq!(OP::from(0xF007), OP::LDDT { vx: 0x00 });
+        assert_eq!(OP::from(0xFF07), OP::LDDT { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_load_load_key() {
+        assert_eq!(OP::from(0xF00A), OP::LDK { vx: 0x00 });
+        assert_eq!(OP::from(0xFF0A), OP::LDK { vx: 0x0F });
     }
 }
