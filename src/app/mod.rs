@@ -40,7 +40,7 @@ pub async fn run(logs: Receiver<logger::Log>) {
         // Render egui
         egui_macroquad::ui(|egui_ctx| {
             egui::SidePanel::right("right panel")
-                .min_width(screen_width() * 0.5)
+                .min_width(screen_width() * 0.6)
                 .resizable(false)
                 .show(egui_ctx, |ui| {
                     state.menu.side_panel(ui);
@@ -50,7 +50,7 @@ pub async fn run(logs: Receiver<logger::Log>) {
         egui_macroquad::draw();
 
         // Draw Chip-8 screen
-        let remaining_space = screen_width() * 0.33;
+        let remaining_space = screen_width() * 0.4;
         let pixel_size = remaining_space / Chip8::VIDEO_WIDTH as f32;
 
         let buffer = state.interpreter.get_video_buffer();
