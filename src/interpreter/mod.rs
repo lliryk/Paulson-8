@@ -284,12 +284,12 @@ impl Chip8 {
                 self.memory.0[self.index as usize] = value % 10;
             }
             OP::LDIA { vx } => {
-                for i in 0..vx as usize {
+                for i in 0..=vx as usize {
                     self.memory.0[self.index as usize + i] = self.registers[i];
                 }
             }
             OP::LDRA { vx } => {
-                for i in 0..vx as usize {
+                for i in 0..=vx as usize {
                     self.registers[i] = self.memory.0[self.index as usize + i];
                 }
             }
