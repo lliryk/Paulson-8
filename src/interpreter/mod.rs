@@ -100,7 +100,7 @@ impl Chip8 {
             .copy_from_slice(file);
 
         // Preload test
-        self.memory.0[0x1FF] = 2;
+        // self.memory.0[0x1FF] = 3;
         Ok(())
     }
 
@@ -160,42 +160,49 @@ impl Chip8 {
             OP::AND { vx, vy } => self.registers[vx as usize] &= self.registers[vy as usize],
             OP::XOR { vx, vy } => self.registers[vx as usize] ^= self.registers[vy as usize],
             OP::ADDR { vx, vy } => {
-                match self.registers[vx as usize].checked_add(self.registers[vy as usize]) {
-                    Some(v) => {
-                        self.registers[vx as usize] = v;
-                        self.registers[0x0F] = 0;
-                    }
-                    None => {
-                        self.registers[vx as usize] = 255;
-                        self.registers[0x0F] = 1;
-                    }
+                let overflow = self.registers[vx as usize].checked_add(self.registers[vy as usize]);
+
+                self.registers[vx as usize] =
+                    self.registers[vx as usize].wrapping_add(self.registers[vy as usize]);
+
+                match overflow {
+                    Some(_) => self.registers[0x0F] = 0,
+                    None => self.registers[0x0F] = 1,
                 }
             }
             OP::SUB { vx, vy } => {
-                if self.registers[vx as usize] > self.registers[vy as usize] {
-                    self.registers[0x0F] = 1;
-                } else {
-                    self.registers[0x0F] = 0;
-                }
+                let order = self.registers[vx as usize].cmp(&self.registers[vy as usize]);
+
                 self.registers[vx as usize] =
                     self.registers[vx as usize].wrapping_sub(self.registers[vy as usize]);
+
+                match order {
+                    std::cmp::Ordering::Greater => self.registers[0x0F] = 1,
+                    std::cmp::Ordering::Less => self.registers[0x0F] = 0,
+                    std::cmp::Ordering::Equal => {}
+                }
             }
             OP::SHR { vx } => {
-                self.registers[0x0F] = self.registers[vx as usize] & 0x01;
+                let bit = self.registers[vx as usize] & 0x01;
                 self.registers[vx as usize] >>= 1;
+                self.registers[0x0F] = bit;
             }
             OP::SUBN { vx, vy } => {
-                if self.registers[vy as usize] > self.registers[vx as usize] {
-                    self.registers[0x0F] = 1;
-                } else {
-                    self.registers[0x0F] = 0;
-                }
+                let order = self.registers[vy as usize].cmp(&self.registers[vx as usize]);
+
                 self.registers[vx as usize] =
                     self.registers[vy as usize].wrapping_sub(self.registers[vx as usize]);
+
+                match order {
+                    std::cmp::Ordering::Greater => self.registers[0x0F] = 1,
+                    std::cmp::Ordering::Less => self.registers[0x0F] = 0,
+                    std::cmp::Ordering::Equal => {}
+                }
             }
             OP::SHL { vx } => {
-                self.registers[0x0F] = (self.registers[vx as usize] & 0x80) >> 7;
+                let bit = (self.registers[vx as usize] & 0x80) >> 7;
                 self.registers[vx as usize] <<= 1;
+                self.registers[0x0F] = bit;
             }
             OP::SNER { vx, vy } => {
                 if self.registers[vx as usize] != self.registers[vy as usize] {
