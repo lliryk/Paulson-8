@@ -100,7 +100,8 @@ impl Chip8 {
             .copy_from_slice(file);
 
         // Preload test
-        // self.memory.0[0x1FF] = 3;
+        self.memory.0[0x1FF] = 5;
+        self.memory.0[0x1FE] = 1;
         Ok(())
     }
 
