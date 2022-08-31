@@ -6,6 +6,7 @@ use std::{
 
 use egui::{text::LayoutJob, Color32, ComboBox, Galley, ScrollArea, TextFormat, Ui};
 use log::Level;
+use macroquad::prelude::get_fps;
 
 use super::logger;
 
@@ -57,7 +58,7 @@ impl UserInterface {
     }
 
     pub fn side_panel(&mut self, ui: &mut Ui) {
-        ui.heading("Left Panel");
+        ui.heading(format!("FPS {}", get_fps()));
         let running = self.running.get();
         let btn_text = match running {
             true => "Stop",

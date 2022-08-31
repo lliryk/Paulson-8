@@ -99,9 +99,6 @@ impl Chip8 {
         self.memory.0[Chip8::START_ADDRESS as usize..Chip8::START_ADDRESS as usize + file.len()]
             .copy_from_slice(file);
 
-        // Preload test
-        self.memory.0[0x1FF] = 5;
-        self.memory.0[0x1FE] = 1;
         Ok(())
     }
 
@@ -253,7 +250,7 @@ impl Chip8 {
                 }
             }
             OP::SKP { vx } => {
-                if self.keypad.0[vx as usize] == 0xFF {
+                if self.keypad.0[self.registers[vx as usize] as usize] == 0xFF {
                     self.program_counter += 2;
                 }
             }

@@ -34,7 +34,7 @@ pub async fn run(logs: Receiver<logger::Log>) {
     loop {
         if state.running.get() {
             use KeyCode::*;
-            let keypad_codes = [Key1, Key2, Key3, Key4, Q, W, E, R, A, S, D, F, Z, X, C, V];
+            let keypad_codes = [X, Key1, Key2, Key3, Q, W, E, A, S, D, Z, C, Key4, R, F, V];
 
             let pressed = keypad_codes
                 .iter()
@@ -43,7 +43,10 @@ pub async fn run(logs: Receiver<logger::Log>) {
 
             state.interpreter.update_input(&pressed);
 
-            state.interpreter.cycle();
+            // This should be adjustable
+            for _ in 0..20 {
+                state.interpreter.cycle();
+            }
         }
         clear_background(WHITE);
 
