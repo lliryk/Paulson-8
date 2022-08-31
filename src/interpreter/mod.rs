@@ -259,9 +259,37 @@ impl Chip8 {
                     self.program_counter -= 2;
                 }
             }
-            OP::INV { opcode } => {
-                warn!("Attempted to execute invalid opcode: 0x{:04x}", opcode);
+            OP::LDT { vx } => self.delay_timer = self.registers[vx as usize],
+            OP::LDST { vx } => self.sound_timer = self.registers[vx as usize],
+            OP::ADDI { vx } => self.index += self.registers[vx as usize] as u16,
+            OP::LDF { vx } => {
+                self.index = Chip8::FONT_ADDRESS + (5 * self.registers[vx as usize] as u16)
             }
+            OP::LDB { vx } => {
+                let mut value = self.registers[vx as usize];
+
+                // One digit
+                self.memory.0[self.index as usize + 2] = value % 10;
+                value /= 10;
+
+                // Tens digit
+                self.memory.0[self.index as usize + 1] = value % 10;
+                value /= 10;
+
+                // Hundreds digit
+                self.memory.0[self.index as usize] = value % 10;
+            }
+            OP::LDIA { vx } => {
+                for i in 0..vx as usize {
+                    self.memory.0[self.index as usize + i] = self.registers[i];
+                }
+            }
+            OP::LDRA { vx } => {
+                for i in 0..vx as usize {
+                    self.registers[i] = self.memory.0[self.index as usize + i];
+                }
+            }
+            OP::INV { opcode } => warn!("Attempted to execute invalid opcode: 0x{:04x}", opcode),
         }
     }
 

@@ -30,6 +30,13 @@ pub enum OP {
     SKNP { vx: u8 },
     LDDT { vx: u8 },
     LDK { vx: u8 },
+    LDT { vx: u8 },
+    LDST { vx: u8 },
+    ADDI { vx: u8 },
+    LDF { vx: u8 },
+    LDB { vx: u8 },
+    LDIA { vx: u8 },
+    LDRA { vx: u8 },
     INV { opcode: u16 }, // Invalid opcode
 }
 
@@ -103,6 +110,13 @@ impl From<u16> for OP {
                 match v & 0x00FF {
                     0x07 => OP::LDDT { vx },
                     0x0A => OP::LDK { vx },
+                    0x15 => OP::LDT { vx },
+                    0x18 => OP::LDST { vx },
+                    0x1E => OP::ADDI { vx },
+                    0x29 => OP::LDF { vx },
+                    0x33 => OP::LDB { vx },
+                    0x55 => OP::LDIA { vx },
+                    0x65 => OP::LDRA { vx },
                     _ => OP::INV { opcode: v },
                 }
             }
@@ -141,6 +155,13 @@ impl std::fmt::Display for OP {
             OP::SKNP { .. } => "SKNP",
             OP::LDDT { .. } => "LDDT", // Should this be "LD"?
             OP::LDK { .. } => "LDK",
+            OP::LDT { .. } => "LDT", // This is ld delay timer register, but LDDTR is too long
+            OP::LDST { .. } => "LDST",
+            OP::ADDI { .. } => "ADDI",
+            OP::LDF { .. } => "LDF",
+            OP::LDB { .. } => "LDB",
+            OP::LDIA { .. } => "LDIA", // Load index array, is there a better name?
+            OP::LDRA { .. } => "LDRA", // Load register array
             OP::INV { .. } => "INV",
         })
     }
@@ -441,8 +462,50 @@ mod test {
     }
 
     #[test]
-    fn parse_load_load_key() {
+    fn parse_load_key() {
         assert_eq!(OP::from(0xF00A), OP::LDK { vx: 0x00 });
         assert_eq!(OP::from(0xFF0A), OP::LDK { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_set_delay_timer() {
+        assert_eq!(OP::from(0xF015), OP::LDT { vx: 0x00 });
+        assert_eq!(OP::from(0xFF15), OP::LDT { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_set_sound_timer() {
+        assert_eq!(OP::from(0xF018), OP::LDST { vx: 0x00 });
+        assert_eq!(OP::from(0xFF18), OP::LDST { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_add_index() {
+        assert_eq!(OP::from(0xF01E), OP::ADDI { vx: 0x00 });
+        assert_eq!(OP::from(0xFF1E), OP::ADDI { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_load_font() {
+        assert_eq!(OP::from(0xF029), OP::LDF { vx: 0x00 });
+        assert_eq!(OP::from(0xFF29), OP::LDF { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_store_bcd() {
+        assert_eq!(OP::from(0xF033), OP::LDB { vx: 0x00 });
+        assert_eq!(OP::from(0xFF33), OP::LDB { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_load_index_array() {
+        assert_eq!(OP::from(0xF055), OP::LDIA { vx: 0x00 });
+        assert_eq!(OP::from(0xFF55), OP::LDIA { vx: 0x0F });
+    }
+
+    #[test]
+    fn parse_load_register_array() {
+        assert_eq!(OP::from(0xF065), OP::LDRA { vx: 0x00 });
+        assert_eq!(OP::from(0xFF65), OP::LDRA { vx: 0x0F });
     }
 }
