@@ -33,6 +33,16 @@ pub async fn run(logs: Receiver<logger::Log>) {
     let mut state = State::new(logs);
     loop {
         if state.running.get() {
+            use KeyCode::*;
+            let keypad_codes = [Key0, Key1, Key2, Key3, Q, W, E, R, A, S, D, F, Z, X, C, V];
+
+            let pressed = keypad_codes
+                .iter()
+                .map(|key| is_key_down(*key))
+                .collect::<Vec<bool>>();
+
+            state.interpreter.update_input(&pressed);
+
             state.interpreter.cycle();
         }
         clear_background(WHITE);

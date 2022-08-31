@@ -12,7 +12,7 @@
 
 pub mod opcodes;
 
-use log::{error, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 use opcodes::OP;
 use rand;
 
@@ -92,13 +92,15 @@ impl Chip8 {
         //     }
         // };
 
-        // let file = include_bytes!("../../res/chip8-test-suite.ch8");
-        let file = include_bytes!("../../res/IBM Logo.ch8");
+        let file = include_bytes!("../../res/chip8-test-suite.ch8");
+        // let file = include_bytes!("../../res/IBM Logo.ch8");
 
         // Would be nice to have start address be usize...
         self.memory.0[Chip8::START_ADDRESS as usize..Chip8::START_ADDRESS as usize + file.len()]
             .copy_from_slice(file);
 
+        // Preload test
+        self.memory.0[0x1FF] = 2;
         Ok(())
     }
 
@@ -150,7 +152,9 @@ impl Chip8 {
                 }
             }
             OP::LD { vx, byte } => self.registers[vx as usize] = byte,
-            OP::ADD { vx, byte } => self.registers[vx as usize] += byte,
+            OP::ADD { vx, byte } => {
+                self.registers[vx as usize] = self.registers[vx as usize].wrapping_add(byte)
+            }
             OP::LDR { vx, vy } => self.registers[vx as usize] = self.registers[vy as usize],
             OP::OR { vx, vy } => self.registers[vx as usize] |= self.registers[vy as usize],
             OP::AND { vx, vy } => self.registers[vx as usize] &= self.registers[vy as usize],
@@ -295,6 +299,7 @@ impl Chip8 {
 
     pub fn cycle(&mut self) {
         let first_byte = self.memory.0[self.program_counter as usize] as u16;
+        // FIXME: Memory needs out of bounds protection
         let second_byte = self.memory.0[self.program_counter as usize + 1];
         let op = OP::from(first_byte << 8 | second_byte as u16);
 
@@ -309,6 +314,20 @@ impl Chip8 {
 
         if self.sound_timer > 0 {
             self.sound_timer -= 1;
+        }
+    }
+
+    pub fn update_input(&mut self, pressed: &[bool]) {
+        assert!(pressed.len() <= 16, "Only 16 keys exist");
+
+        for (i, key) in pressed.iter().enumerate() {
+            self.keypad.0[i] = match *key {
+                true => {
+                    debug!("Pressed {}", i);
+                    0xFF
+                }
+                false => 0x00,
+            };
         }
     }
 

@@ -99,7 +99,7 @@ impl From<u16> for OP {
                 vy: ((v & 0x00F0) >> 4) as u8,
                 height: (v & 0x0F) as u8,
             },
-            0xE000..=0xEFFF if v & 0x00FF == 0xE9 => OP::SKP {
+            0xE000..=0xEFFF if v & 0x00FF == 0x9E => OP::SKP {
                 vx: ((v & 0x0F00) >> 8) as u8,
             },
             0xE000..=0xEFFF if v & 0x00FF == 0xA1 => OP::SKNP {
@@ -443,8 +443,8 @@ mod test {
 
     #[test]
     fn parse_skip() {
-        assert_eq!(OP::from(0xE0E9), OP::SKP { vx: 0x00 });
-        assert_eq!(OP::from(0xEFE9), OP::SKP { vx: 0x0F });
+        assert_eq!(OP::from(0xE09E), OP::SKP { vx: 0x00 });
+        assert_eq!(OP::from(0xEF9E), OP::SKP { vx: 0x0F });
         assert_eq!(OP::from(0xE000), OP::INV { opcode: 0xE000 });
     }
 
