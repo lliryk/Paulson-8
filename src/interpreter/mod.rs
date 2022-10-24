@@ -83,21 +83,21 @@ impl Chip8 {
         }
     }
 
-    pub fn load(&mut self, _filepath: &std::path::Path) -> std::io::Result<()> {
-        // let file = match std::fs::read(filepath) {
-        //     Ok(file) => file,
-        //     Err(e) => {
-        //         error!("Could not open file: {}", e);
-        //         return Err(e);
-        //     }
-        // };
-
-        let file = include_bytes!("../../res/chip8-test-suite.ch8");
-        // let file = include_bytes!("../../res/IBM Logo.ch8");
+    pub fn load(&mut self, filepath: &std::path::Path) -> std::io::Result<()> {
+        let file = match std::fs::read(filepath) {
+            Ok(file) => file,
+            Err(e) => {
+                error!("Could not open file: {}", e);
+                return Err(e);
+            }
+        };
+        
+        // To automatically load a file
+        // let file = include_bytes!("example.ch8");
 
         // Would be nice to have start address be usize...
         self.memory.0[Chip8::START_ADDRESS as usize..Chip8::START_ADDRESS as usize + file.len()]
-            .copy_from_slice(file);
+            .copy_from_slice(&file);
 
         Ok(())
     }
